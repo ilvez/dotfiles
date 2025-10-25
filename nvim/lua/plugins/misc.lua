@@ -1,5 +1,25 @@
 return {
   {
+    'tpope/vim-fugitive',
+    cmd = { 'Git', 'G' },
+    keys = {
+      { '<leader>va', ':Git blame<CR>', desc = 'git blame', mode = 'n' },
+      { '<leader>va', '<C-C>:Git blame<CR>', desc = 'git blame', mode = 'v' },
+      { '<leader>va', '<C-O>:Git blame<CR>', desc = 'git blame', mode = 'i' },
+    },
+  },
+  {
+    'vim-ruby/vim-ruby',
+    ft = 'ruby'
+  },
+  {
+    'cuducos/yaml.nvim',
+    ft = 'yaml',
+    dependencies = {
+      'nvim-treesitter/nvim-treesitter',
+    },
+  },
+  {
     'rgroli/other.nvim',
     cmd = { 'Other', 'OtherVSplit', 'OtherSplit' },
     keys = {
@@ -22,3 +42,4 @@ return {
     end
   },
 }
+
