@@ -9,32 +9,6 @@ return {
       'hrsh7th/cmp-nvim-lsp',
     },
     config = function()
-      vim.api.nvim_create_autocmd('LspAttach', {
-        callback = function(args)
-          local bufnr = args.buf
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          local opts = { buffer = bufnr, remap = false }
-
-          vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
-          vim.keymap.set('n', 'K', function() vim.lsp.buf.hover({ border = 'rounded' }) end, opts)
-          vim.keymap.set('n', '<leader>vws', vim.lsp.buf.workspace_symbol, opts)
-          vim.keymap.set('n', '<leader>vd', vim.diagnostic.open_float, opts)
-          vim.keymap.set('n', '[d', function() vim.diagnostic.jump({ count = -1 }) end, opts)
-          vim.keymap.set('n', ']d', function() vim.diagnostic.jump({ count = 1 }) end, opts)
-          vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
-          vim.keymap.set('n', '<leader>vrr', vim.lsp.buf.references, opts)
-          vim.keymap.set('n', '<leader>vrn', vim.lsp.buf.rename, opts)
-          vim.keymap.set('i', '<C-h>', function() vim.lsp.buf.signature_help({ border = 'rounded' }) end, opts)
-
-          if client and client:supports_method('textDocument/inlayHint') then
-            vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
-            vim.keymap.set('n', '<leader>vh', function()
-              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
-            end, { buffer = bufnr, desc = 'Toggle inlay hints' })
-          end
-        end,
-      })
-
       local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
       require('mason').setup({})
@@ -49,12 +23,6 @@ return {
           "eslint",
         },
       })
-
-      vim.api.nvim_create_user_command(
-        'RenameIdentifier',
-        function() vim.lsp.buf.rename() end,
-        {}
-      )
 
       vim.diagnostic.config({
         virtual_text = {
@@ -80,93 +48,67 @@ return {
         },
       })
 
-      vim.keymap.set('n', '<leader>m', vim.diagnostic.open_float, { desc = 'show diagnostic error [m]essages' })
-      vim.keymap.set('n', '<leader>f', vim.diagnostic.setloclist, { desc = 'open diagnostic quick[f]ix list' })
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(args)
+          local bufnr = args.buf
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          local opts = { buffer = bufnr, remap = false }
 
-      vim.lsp.config.lua_ls = {
-        cmd = { 'lua-language-server' },
-        filetypes = { 'lua' },
-        root_markers = { '.luarc.json', '.luarc.jsonc', '.luacheckrc', '.stylua.toml', 'stylua.toml', 'selene.toml', 'selene.yml', '.git' },
+          vim.keymap.set('n', 'gd', vim.lsp.buf.definition, opts)
+          vim.keymap.set('n', 'K', function() vim.lsp.buf.hover({ border = 'rounded' }) end, opts)
+          vim.keymap.set('n', '<leader>vws', vim.lsp.buf.workspace_symbol, opts)
+          vim.keymap.set('n', '<leader>vd', vim.diagnostic.open_float, opts)
+          vim.keymap.set('n', '[d', function() vim.diagnostic.jump({ count = -1 }) end, opts)
+          vim.keymap.set('n', ']d', function() vim.diagnostic.jump({ count = 1 }) end, opts)
+          vim.keymap.set('n', '<leader>ca', vim.lsp.buf.code_action, opts)
+          vim.keymap.set('n', '<leader>vrr', vim.lsp.buf.references, opts)
+          vim.keymap.set('n', '<leader>vrn', vim.lsp.buf.rename, opts)
+          vim.keymap.set('i', '<C-h>', function() vim.lsp.buf.signature_help({ border = 'rounded' }) end, opts)
+          vim.keymap.set('n', '<leader>m', vim.diagnostic.open_float, opts)
+          vim.keymap.set('n', '<leader>f', vim.diagnostic.setloclist, opts)
+
+          if client and client:supports_method('textDocument/inlayHint') then
+            vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+            vim.keymap.set('n', '<leader>vh', function()
+              vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }), { bufnr = bufnr })
+            end, { buffer = bufnr, desc = 'Toggle inlay hints' })
+          end
+        end,
+      })
+
+      vim.lsp.config.lua_ls = { capabilities = capabilities }
+
+      vim.lsp.config.pylsp = { capabilities = capabilities }
+      vim.lsp.config.ruff = { capabilities = capabilities }
+
+      vim.lsp.config.solargraph = {
         capabilities = capabilities,
+        settings = {
+          solargraph = {
+            autoformat = false,
+            formatting = false,
+            folding = false,
+          }
+        }
       }
-
-      vim.lsp.config.pylsp = {
-        cmd = { 'pylsp' },
-        filetypes = { 'python' },
-        root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', 'Pipfile', '.git' },
-        capabilities = capabilities,
-      }
-
-      vim.lsp.config.ruff = {
-        cmd = { 'ruff', 'server' },
-        filetypes = { 'python' },
-        root_markers = { 'pyproject.toml', 'ruff.toml', '.ruff.toml', '.git' },
+      vim.lsp.config.rubocop = {
+        cmd = { 'bundle', 'exec', 'rubocop', '--lsp' },
         capabilities = capabilities,
       }
 
       local vue_language_server_path = vim.fn.stdpath('data') .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
-      local tsserver_filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' }
       local vue_plugin = {
         name = '@vue/typescript-plugin',
         location = vue_language_server_path,
         languages = { 'vue' },
         configNamespace = 'typescript',
       }
-      local vtsls_config = {
-        settings = {
-          vtsls = {
-            tsserver = {
-              globalPlugins = {
-                vue_plugin,
-              },
-            },
-          },
-        },
-        filetypes = tsserver_filetypes,
-      }
-      local ts_ls_config = {
-        init_options = {
-          plugins = {
-            vue_plugin,
-          },
-        },
-        filetypes = tsserver_filetypes,
-        root_markers = "tsconfig.json",
+      vim.lsp.config.ts_ls = {
+        init_options = { plugins = { vue_plugin } },
+        filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue' },
         capabilities = capabilities,
       }
-      local vue_ls_config = {
-        capabilities = capabilities,
-      }
-      vim.lsp.config('vtsls', vtsls_config)
-      vim.lsp.config('vue_ls', vue_ls_config)
-      vim.lsp.config('ts_ls', ts_ls_config)
-
-      vim.lsp.config.solargraph = {
-        cmd = { 'solargraph', 'stdio' },
-        filetypes = { 'ruby' },
-        root_markers = { 'Gemfile', '.git', '.' },
-        capabilities = capabilities,
-        settings = {
-          solargraph = {
-            autoformat = false,
-            formatting = false,
-            completion = true,
-            diagnostic = true,
-            folding = false,
-            references = true,
-            rename = true,
-            symbols = true
-          }
-        }
-      }
-
-      vim.lsp.config.rubocop = {
-        cmd = { 'bundle', 'exec', 'rubocop', '--lsp' },
-        filetypes = { 'ruby' },
-        root_markers = { 'Gemfile', '.git', '.' },
-        capabilities = capabilities,
-      }
-
+      vim.lsp.config.vue_ls = { capabilities = capabilities }
       vim.lsp.config.eslint = {
         cmd = { 'vscode-eslint-language-server', '--stdio' },
         filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'vue' },
@@ -200,7 +142,7 @@ return {
 
       cmp.setup({
         sources = {
-          {name = 'nvim_lsp'},
+          { name = 'nvim_lsp' },
         },
         snippet = {
           expand = function(args)
@@ -208,7 +150,7 @@ return {
           end,
         },
         formatting = {
-          fields = {'menu', 'abbr', 'kind'},
+          fields = { 'menu', 'abbr', 'kind' },
           format = function(entry, item)
             local menu_icon = {
               nvim_lsp = 'λ',
@@ -223,7 +165,7 @@ return {
         mapping = cmp.mapping.preset.insert({
           ['<C-p>'] = cmp.mapping.select_prev_item(),
           ['<C-n>'] = cmp.mapping.select_next_item(),
-          ['<C-y>'] = cmp.mapping.confirm({ select = true }),
+          ['<Tab>'] = cmp.mapping.confirm({ select = true }),
           ['<C-Space>'] = cmp.mapping.complete(),
         }),
         window = {
@@ -231,7 +173,6 @@ return {
           documentation = cmp.config.window.bordered(),
         }
       })
-
       cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
     end
   },
