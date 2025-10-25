@@ -32,14 +32,8 @@ return {
         mappings = {
           "rails",
           "python",
-          {
-            pattern = "src/registry_agent/(.*)/.*.py$",
-            target = "tests/%1/test_%1.py",
-            context = "tests",
-          }
         }
       })
     end
   },
 }
-
