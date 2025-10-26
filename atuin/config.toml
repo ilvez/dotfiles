@@ -1,0 +1,8 @@
+inline_height = 0
+enter_accept = true
+style = "full"
+invert = false
+secrets_filter = true
+
+[theme]
+name = "marine"

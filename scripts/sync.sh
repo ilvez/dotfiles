@@ -9,11 +9,12 @@ GLOBAL_EXCLUDES=(
   "lazy-lock.json"
   ".git"
   ".claude"
+  "atuin-receipt.json"
 )
 
 CONFIGS=(
   ".config/nvim|nvim"
-  # ".config/atuin|atuin"
+  ".config/atuin|atuin"
   # ".config/ghostty|ghostty"
   # ".config/direnv|direnv"
 )
